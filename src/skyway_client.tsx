@@ -5,7 +5,6 @@ type AudioStream = {
     peerId: string;
 };
 
-// eslint-disable-next-line react/prop-types
 export const Room: React.FC<{ roomId: string,isHost : boolean }> = ({ roomId,isHost}) => {
     const peer = React.useRef(new Peer({ key: process.env.REACT_APP_SKYWAYAPI as string ,debug: 3}))
 
@@ -30,18 +29,21 @@ export const Room: React.FC<{ roomId: string,isHost : boolean }> = ({ roomId,isH
             if (!peer.current.open) {
                 return
             }
+
             const tmpRoom = (isHost)?peer.current.joinRoom<SfuRoom>(roomId, {
                 mode: 'sfu',
                 stream:localStream,
             }) : peer.current.joinRoom<SfuRoom>(roomId, {
                 mode: 'sfu',
             })
+
             tmpRoom.on('stream', async (stream) => {
                 setRemoteAudio((prev) => [
                     ...prev,
                     { stream: stream, peerId: stream.peerId },
                 ])
             })
+
             tmpRoom.on('peerLeave', (peerId) => {
                 setRemoteAudio((prev) => {
                     return prev.filter((audio) => {
@@ -53,6 +55,7 @@ export const Room: React.FC<{ roomId: string,isHost : boolean }> = ({ roomId,isH
                 })
                 console.log(`=== ${peerId} left ===\n`)
             })
+
             setRoom(tmpRoom)
         }
         setIsStarted((prev) => !prev)
@@ -70,6 +73,7 @@ export const Room: React.FC<{ roomId: string,isHost : boolean }> = ({ roomId,isH
         }
         setIsStarted((prev) => !prev)
     }
+
     const castAudio = () => {
         return remoteAudio.map((audio) => {
             return <RemoteAudio audio={audio} key={audio.peerId} />

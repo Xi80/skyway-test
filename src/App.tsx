@@ -4,7 +4,7 @@ import './App.css'
 const App: React.FC = () => {
     return (
         <>
-            <Room roomId={'test'} isHost={true} />
+            <Room roomId='test' isHost={true} />
         </>
     )
 }
