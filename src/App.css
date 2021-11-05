@@ -10,3 +10,22 @@
 video {
   text-align : center;
 }
+
+.container {
+  overflow: hidden;
+  display: flex;
+}
+
+.containerChild{
+  margin-left: 5px;
+}
+
+.tcenter{
+  text-align: center;
+}
+
+.memberBox{
+  width: 30%;
+  height:500px;
+  background-color: azure;
+}

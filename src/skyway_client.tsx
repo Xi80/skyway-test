@@ -1,22 +1,19 @@
 import Peer, { SfuRoom } from 'skyway-js'
 import React from 'react'
-import Avatar from '@mui/material/Avatar'
-import Box from '@mui/material/Box'
-import Grid from '@mui/material/Grid'
-
 type AudioStream = {
     stream: MediaStream;
     peerId: string;
 };
 
-/* eslint react/prop-types: 0 */
-export const Room: React.FC<{ roomId: string }> = ({ roomId}) => {
+// eslint-disable-next-line react/prop-types
+export const Room: React.FC<{ roomId: string,isHost : boolean }> = ({ roomId,isHost}) => {
     const peer = React.useRef(new Peer({ key: process.env.REACT_APP_SKYWAYAPI as string ,debug: 3}))
+
     const [remoteAudio, setRemoteAudio] = React.useState<AudioStream[]>([])
     const [localStream, setLocalStream] = React.useState<MediaStream>()
     const [room, setRoom] = React.useState<SfuRoom>()
-    const localVideoRef = React.useRef<HTMLVideoElement>(null)
     const [isStarted, setIsStarted] = React.useState(false)
+
     React.useEffect(() => {
         navigator.mediaDevices
             .getUserMedia({audio: true })
@@ -27,20 +24,17 @@ export const Room: React.FC<{ roomId: string }> = ({ roomId}) => {
                 console.log(e)
             })
     }, [])
+
     const onStart = () => {
         if (peer.current) {
             if (!peer.current.open) {
                 return
             }
-            const tmpRoom = peer.current.joinRoom<SfuRoom>(roomId, {
+            const tmpRoom = (isHost)?peer.current.joinRoom<SfuRoom>(roomId, {
                 mode: 'sfu',
-                stream: localStream,
-            })
-            tmpRoom.once('open', () => {
-                console.log('=== You joined ===\n')
-            })
-            tmpRoom.on('peerJoin', (peerId) => {
-                console.log(`=== ${peerId} joined ===\n`)
+                stream:localStream,
+            }) : peer.current.joinRoom<SfuRoom>(roomId, {
+                mode: 'sfu',
             })
             tmpRoom.on('stream', async (stream) => {
                 setRemoteAudio((prev) => [
@@ -63,6 +57,7 @@ export const Room: React.FC<{ roomId: string }> = ({ roomId}) => {
         }
         setIsStarted((prev) => !prev)
     }
+
     const onEnd = () => {
         if (room) {
             room.close()
@@ -77,15 +72,13 @@ export const Room: React.FC<{ roomId: string }> = ({ roomId}) => {
     }
     const castAudio = () => {
         return remoteAudio.map((audio) => {
-            return <>
-
-            </>
+            return <RemoteAudio audio={audio} key={audio.peerId} />
         })
     }
+
     return (
         <div>
-            <button onClick={() => onStart()} disabled={isStarted}>start</button>
-            <button onClick={() => onEnd()} disabled={!isStarted}>end</button>
+            <button onClick={() => onStart()} disabled={isStarted}>開始</button>
             {castAudio()}
         </div>
     )
@@ -93,7 +86,6 @@ export const Room: React.FC<{ roomId: string }> = ({ roomId}) => {
 
 const RemoteAudio = (props: { audio: AudioStream }) => {
     const audioRef = React.useRef<HTMLAudioElement>(null)
-
     React.useEffect(() => {
         if (audioRef.current) {
             audioRef.current.srcObject = props.audio.stream

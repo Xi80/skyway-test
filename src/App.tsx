@@ -1,11 +1,10 @@
 import React from 'react'
 import { Room } from './skyway_client'
 import './App.css'
-const App: React.VFC = () => {
+const App: React.FC = () => {
     return (
         <>
-            <Room roomId={'test'} />
-
+            <Room roomId={'test'} isHost={true} />
         </>
     )
 }
